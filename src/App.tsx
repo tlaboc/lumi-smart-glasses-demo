@@ -11,7 +11,7 @@ const SCENARIOS = [
   { key: 'obstacle', label: '장애물/거리 인식' },
   { key: 'ocr', label: 'OCR(텍스트 읽기)' },
   { key: 'env', label: '환경 설명' },
-  { key: 'edge', label: '모서리 감지' },
+  { key: 'edge', label: '문서 선택/모서리 감지' },
   { key: 'system', label: '시스템 제어' },
   { key: 'onboarding', label: '온보딩/튜토리얼' },
 ]
@@ -90,8 +90,62 @@ function VibratingBox({ position, color = '#facc15', size = [0.024, 0.09, 0.024]
 }
 
 function LumiGlasses({ scenario }: { scenario: string }) {
-  const group = useRef<any>()
+  const group = useRef<THREE.Group>(null)
   const { scene } = useGLTF('/smart_glasses_with_mi_0716092656_texture.glb')
+
+  // 시나리오별 움직임 애니메이션
+  useFrame(({ clock }) => {
+    if (!group.current) return
+    
+    const t = clock.getElapsedTime()
+    
+    switch (scenario) {
+      case 'obstacle':
+        // 좌우 스캔 움직임
+        group.current.rotation.y = Math.sin(t * 0.8) * 0.3
+        group.current.rotation.x = Math.sin(t * 0.5) * 0.1
+        break
+        
+      case 'ocr':
+        // 텍스트 읽기 - 아래위 스캔
+        group.current.rotation.x = Math.sin(t * 0.6) * 0.15
+        group.current.position.y = Math.sin(t * 0.4) * 0.02
+        break
+        
+      case 'env':
+        // 환경 설명 - 360도 천천히 회전
+        group.current.rotation.y = t * 0.2
+        group.current.rotation.x = Math.sin(t * 0.3) * 0.1
+        break
+        
+      case 'edge':
+        // 모서리 감지 - 정밀한 문서 구분 및 선택
+        group.current.rotation.y = Math.sin(t * 0.4) * 0.2  // 천천히 좌우 스캔
+        group.current.rotation.x = Math.sin(t * 0.3) * 0.08  // 미세한 상하 조정
+        group.current.position.x = Math.sin(t * 0.6) * 0.015  // 문서 간 이동
+        group.current.position.z = Math.sin(t * 0.8) * 0.005  // 초점 조정
+        break
+        
+      case 'system':
+        // 시스템 제어 - 호흡 효과
+        const breathing = Math.sin(t * 1.2) * 0.05
+        group.current.position.y = breathing
+        group.current.rotation.x = breathing * 0.3
+        break
+        
+      case 'onboarding':
+        // 온보딩 - 활발한 움직임
+        group.current.rotation.y = Math.sin(t * 0.7) * 0.2
+        group.current.rotation.x = Math.sin(t * 0.9) * 0.1
+        group.current.position.y = Math.sin(t * 1.1) * 0.03
+        break
+        
+      default:
+        // 기본 상태 - 미세한 움직임
+        group.current.rotation.y = Math.sin(t * 0.3) * 0.05
+        break
+    }
+  })
 
   return (
     <group ref={group}>
@@ -150,14 +204,14 @@ function LumiGlasses({ scenario }: { scenario: string }) {
       {/* 모서리 감지: 라이다(경첩) + 햅틱(다리) + 경고 */}
       {scenario === 'edge' && (
         <>
-          <BlinkingLED position={PARTS.leftHinge as [number, number, number]} color="#f59e42" size={0.012} speed={5} />
-          <BlinkingLED position={PARTS.rightHinge as [number, number, number]} color="#f59e42" size={0.012} speed={5} />
-          <AnimatedWave position={PARTS.leftHinge as [number, number, number]} color="#f59e42" scale={1.2} speed={2.2} />
-          <AnimatedWave position={PARTS.rightHinge as [number, number, number]} color="#f59e42" scale={1.2} speed={2.2} />
-          <VibratingBox position={PARTS.leftTemple as [number, number, number]} color="#dc2626" size={[0.012, 0.045, 0.012]} speed={16} />
-          <VibratingBox position={PARTS.rightTemple as [number, number, number]} color="#dc2626" size={[0.012, 0.045, 0.012]} speed={16} />
-          <Text position={[0, 0.09, 0.07] as [number, number, number]} fontSize={0.018} color="#f59e42" anchorX="center" anchorY="middle" outlineColor="#fff" outlineWidth={0.002}>
-            모서리 감지: 오른쪽 모서리 주의
+          <BlinkingLED position={PARTS.leftHinge as [number, number, number]} color="#8b5cf6" size={0.012} speed={3} />
+          <BlinkingLED position={PARTS.rightHinge as [number, number, number]} color="#8b5cf6" size={0.012} speed={3} />
+          <AnimatedWave position={PARTS.leftHinge as [number, number, number]} color="#8b5cf6" scale={1.2} speed={1.5} />
+          <AnimatedWave position={PARTS.rightHinge as [number, number, number]} color="#8b5cf6" scale={1.2} speed={1.5} />
+          <VibratingBox position={PARTS.leftTemple as [number, number, number]} color="#facc15" size={[0.012, 0.045, 0.012]} speed={8} />
+          <VibratingBox position={PARTS.rightTemple as [number, number, number]} color="#facc15" size={[0.012, 0.045, 0.012]} speed={8} />
+                      <Text position={[0, 0.09, 0.07] as [number, number, number]} fontSize={0.018} color="#8b5cf6" anchorX="center" anchorY="middle" outlineColor="#fff" outlineWidth={0.002}>
+            문서 선택: 여러 문서 중 목표 문서 감지
           </Text>
         </>
       )}
@@ -224,7 +278,7 @@ function App() {
           <li>장애물/거리 인식: 라이다(경첩) + 햅틱(다리) + 음성 안내</li>
           <li>OCR: 카메라(경첩) + 터치패드(다리) + 음성 안내</li>
           <li>환경 설명: 라이다/카메라(경첩) + 햅틱(다리) + 텍스트/음성</li>
-          <li>모서리 감지: 라이다(경첩) + 햅틱(다리) + 경고</li>
+          <li>문서 선택: 라이다(경첩) + 햅틱(다리) + 정밀 감지</li>
           <li>시스템 제어: 다리(마이크/스피커/햅틱) + 텍스트/음성</li>
           <li>온보딩: 모든 파츠 순차 안내</li>
         </ul>
