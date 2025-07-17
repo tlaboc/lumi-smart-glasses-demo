@@ -14,14 +14,13 @@ type GLTFResult = GLTF & {
     mesh_0: THREE.Mesh
   }
   materials: {}
-  animations: GLTFAction[]
 }
 
-export function Model(props: JSX.IntrinsicElements['group']) {
-  const { nodes, materials } = useGLTF('/smart_glasses_with_mi_0716092656_texture-transformed.glb') as GLTFResult
+export function Model(props: React.JSX.IntrinsicElements['group']) {
+  const { nodes, materials } = useGLTF('/smart_glasses_with_mi_0716092656_texture-transformed.glb')
   return (
     <group {...props} dispose={null}>
-      <mesh geometry={nodes.mesh_0.geometry} material={nodes.mesh_0.material} />
+      <mesh geometry={(nodes.mesh_0 as THREE.Mesh).geometry} material={(nodes.mesh_0 as THREE.Mesh).material} />
     </group>
   )
 }
