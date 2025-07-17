@@ -301,11 +301,11 @@ function App() {
         ))}
       </div>
       <div className="canvas-wrapper">
-        <Canvas camera={{ position: [0, 0.05, 0.30], fov: 34 }} shadows>
+        <Canvas camera={{ position: [0, 0.1, 0.6], fov: 45 }} shadows>
           <ambientLight intensity={1.1} />
           <directionalLight position={[0.5, 1, 1]} intensity={0.7} />
           <LumiGlasses scenario={scenario} />
-          <OrbitControls enablePan={false} enableRotate={true} enableZoom={true} minDistance={0.18} maxDistance={0.5} target={[0,0.03,0.01]} />
+          <OrbitControls enablePan={false} enableRotate={true} enableZoom={true} minDistance={0.35} maxDistance={1.2} target={[0,0.03,0.01]} />
         </Canvas>
       </div>
       <div className="desc">
